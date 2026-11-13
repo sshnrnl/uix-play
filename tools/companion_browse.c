@@ -16,7 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef _WIN32
+#include <winsock2.h>   /* select(), fd_set, ntohs(); link with ws2_32 */
+#else
 #include <sys/select.h>
+#include <arpa/inet.h>  /* ntohs(); not pulled in by avahi's dns_sd.h on Linux */
+#endif
 #include <dns_sd.h>
 
 #define SERVICE "_companion-link._tcp"

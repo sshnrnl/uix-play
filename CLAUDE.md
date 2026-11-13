@@ -11,7 +11,9 @@ desktop. Personal project, not Kyou work.
   and prints host, port and TXT fields. Uses the system `dns_sd` API, because UxPlay's
   internal `lib/mdnsd` can only advertise, not browse.
   - Quick build: `cc -o companion-browse tools/companion_browse.c && ./companion-browse 10`
-    (macOS; on Linux add `-I/usr/include/avahi-compat-libdns_sd -ldns_sd`).
+    (macOS; on Linux add `-I/usr/include/avahi-compat-libdns_sd -ldns_sd`; on Windows/MSYS2
+    it needs the Bonjour SDK's `dns_sd.h` + `dnssd.lib`, plus `-lws2_32`, and the Bonjour service running).
+  - Compile-checked 13 Nov 2026: MinGW gcc 16 (Apple `dns_sd.h`) and GCC 14 + Avahi, both clean with `-Wall -Wextra`.
   - CMake target `companion-browse` is defined in `lib/dns_sd/CMakeLists.txt`, so it only
     exists in dns_sd builds. Untested: the full configure needs pkg-config, GStreamer,
     OpenSSL and libplist.
