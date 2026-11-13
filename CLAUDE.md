@@ -116,6 +116,23 @@ OS. **Signing into an Apple ID on Windows does not bridge this** — the missing
 Rapport auth stack, not an account login. Reimplementing it is a large RE effort with no
 guarantee, and may run into Apple-ID / DMCA-interop concerns. Keep that in view before investing.
 
+### Windows lockdown/RemoteXPC trust — DEFINITIVE (13 Nov 2026)
+
+Paired the Windows PC with the iPhone (pymobiledevice3 `lockdown pair`, Trust accepted) and ran
+`remote rsd-info` (RemoteXPC tunnel over USB, no root). **62 services reachable, all developer/
+diagnostic/management; none is Continuity Camera / Rapport / AVConference.** So the developer
+trust domain does NOT reach Continuity — it is gated behind Rapport, a separate Apple-ID-keyed
+trust channel. Pairing from Windows (even with Apple ID) cannot reach the camera. Full writeup:
+`research/findings-windows-trust.md`.
+
+Byproduct: `com.apple.pcapd` is reachable → iPhone-side packet capture over USB from Windows
+(`pymobiledevice3 pcap`), covering awdl0/llw0 from the phone's view — a better handshake-capture
+instrument than Mac tcpdump. Also note the USB PTP/UVC camera interface is the practical webcam
+path (Camo-style), separate from Continuity.
+
+Environment note: on Windows, restart "Apple Mobile Device Service" after plugging the phone in or
+usbmux lists nothing; the data interface appears only after unlock + Trust.
+
 ## Not known yet
 
 - ~~Whether the RTP on `llw0` is encrypted~~: yes (see above). The codec on the wire is still
