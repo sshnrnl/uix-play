@@ -133,7 +133,25 @@ path (Camo-style), separate from Continuity.
 Environment note: on Windows, restart "Apple Mobile Device Service" after plugging the phone in or
 usbmux lists nothing; the data interface appears only after unlock + Trust.
 
-## Not known yet
+### DEFINITIVE: no cleartext handshake on the LAN (13 Nov 2026)
+
+Captured a fresh Continuity session's awdl0 control connection **from its TCP SYN** (confirmed
+had_SYN=True). Its **first data frame is already encrypted** (type 0x08, len 665, entropy 7.68),
+and so is the first reply (471 B, entropy 7.59). There is **no cleartext pair-setup/pair-verify
+M1** (no curve25519 public key, no HAP-TLV, no OPACK dict) anywhere on the wire.
+
+Interpretation: two devices on the **same Apple ID** do not run a LAN PIN pair-setup. Their
+Rapport trust is **pre-provisioned via iCloud/IDS** (identity keys fetched from Apple servers over
+APNs/IDS, private keys in the Secure Enclave). The LAN session is encrypted from byte 0 using a
+context derived from that pre-shared identity. So the SRTP key cannot be recovered by observing
+the LAN, and signing out/in of iCloud would not help (re-provisioning is off-LAN, encrypted).
+
+**Verdict for the project:** receiving Continuity Camera on a non-Apple host would require Apple-ID
+device-identity private keys that never leave the Secure Enclave. This is not obtainable through
+LAN interop. The research is complete: the whole stack is mapped and the trust root is pinned.
+Remaining practical webcam path is the USB PTP/UVC interface (separate from Continuity).
+
+## Resolved / still open
 
 - ~~Whether the RTP on `llw0` is encrypted~~: yes (see above). The codec on the wire is still
   unknown; it can only be seen after decryption.

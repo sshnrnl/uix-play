@@ -46,12 +46,13 @@ Streams walk cleanly as sequences of 0x08 frames, e.g. en0 rapportd one directio
 One large awdl0 frame `(8,665)` is followed by a non-0x08 region (a different sub-stream /
 bulk payload) — to be split out later.
 
-**Why no cleartext keys:** the iPhone and Mac already hold a persistent Rapport pairing (set up
-once via iCloud), so each session runs only **pair-verify**, and its messages are inside the
-0x08 encrypted framing from byte 0. A cleartext **pair-setup** (ephemeral curve25519 keys, SRP)
-only happens on a device's first-ever trust. Capturing that would require breaking the existing
-pairing (sign out of iCloud / unpair both ends) — disruptive, and the resulting keys are still
-bound to Apple-ID device identity (Secure Enclave). That is the wall.
+**Why no cleartext keys (SYN-confirmed):** re-captured a session's awdl0 control connection from
+its TCP **SYN**. The first data frame is already encrypted (0x08, 665 B, entropy 7.68); the first
+reply too (471 B, 7.59). No curve25519 pubkey, no HAP-TLV, no OPACK — nothing cleartext. So for
+two devices on the **same Apple ID** there is no LAN pair-setup to capture: trust is pre-provisioned
+via iCloud/IDS (identity from Apple servers, private keys in the Secure Enclave), and the session
+is encrypted from byte 0. Signing out/in of iCloud would not expose it (re-provisioning is off-LAN).
+**This is the wall, and it is not an interop-on-LAN problem — it is Apple-ID device identity.**
 
 ## Net: the only missing piece is the Rapport pair-verify key schedule
 
