@@ -1,0 +1,3 @@
+# raw captures contain home-network traffic; keep local, do not push
+*.pcap
+*.mp4
