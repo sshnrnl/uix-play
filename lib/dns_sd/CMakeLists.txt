@@ -46,3 +46,9 @@ if ( NOT APPLE )
 endif()	
 
 
+
+# companion-browse: Rapport (_companion-link._tcp) discovery tool, see tools/companion_browse.c.
+# Defined here so it gets the same dns_sd include/link setup as the dnssd library.
+add_executable( companion-browse ${CMAKE_SOURCE_DIR}/tools/companion_browse.c )
+target_include_directories( companion-browse PRIVATE ${AVAHI_DNSSD_INCLUDE_DIRS} ${DNSSD_INCLUDE_DIR} )
+target_link_libraries( companion-browse PRIVATE dnssd )
