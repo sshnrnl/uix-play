@@ -30,6 +30,29 @@ Processes (pcapd attribution): `mediaserverd`/media stack (video), `clocksyncd` 
 - pcapd captures the video on the iPhone **send** side (BPF sees it here), unlike Mac-side where
   the sender's sockets were invisible to lsof — useful asymmetry for future work.
 
+## Rapport transport framing (handshake capture, 13 Nov 2026)
+
+Reassembled the control TCP streams (en0 persistent `rapportd` :56431<->:49155, and awdl0
+`continuitycapture` :49447<->:65136). Frame format is confirmed:
+
+```
+  frame = type(1) | length(3, big-endian) | body
+  type 0x08 = encrypted application frame
+```
+
+Streams walk cleanly as sequences of 0x08 frames, e.g. en0 rapportd one direction =
+`(8,98)(8,147)(8,98)(8,121)(8,317)`, other = `(8,329)(8,117)(8,56)(8,385)`; awdl0
+`(8,471)(8,631)(8,634)(8,631)`. Bodies are high-entropy (encrypted) from the **first** frame.
+One large awdl0 frame `(8,665)` is followed by a non-0x08 region (a different sub-stream /
+bulk payload) — to be split out later.
+
+**Why no cleartext keys:** the iPhone and Mac already hold a persistent Rapport pairing (set up
+once via iCloud), so each session runs only **pair-verify**, and its messages are inside the
+0x08 encrypted framing from byte 0. A cleartext **pair-setup** (ephemeral curve25519 keys, SRP)
+only happens on a device's first-ever trust. Capturing that would require breaking the existing
+pairing (sign out of iCloud / unpair both ends) — disruptive, and the resulting keys are still
+bound to Apple-ID device identity (Secure Enclave). That is the wall.
+
 ## Net: the only missing piece is the Rapport pair-verify key schedule
 
 Everything else (discovery surface, RTP/RTCP framing, PTP clock, Windows trust) is mapped. To
